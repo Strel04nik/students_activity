@@ -1,0 +1,26 @@
+.tag-cloud {
+    text-align: center;
+    padding: 10px;
+}
+
+.tag-link {
+    transition: all 0.2s ease;
+}
+
+.tag-link:hover {
+    color: #0a58ca !important;
+    transform: scale(1.05);
+    text-decoration: underline !important;
+}
+
+.list-group-item {
+    transition: background-color 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+#ratingChart {
+    max-height: 300px;
+}

@@ -1,0 +1,10 @@
+/* assets/css/event.css */
+.event-stats {
+    margin-top: 20px;
+}
+.participant-list .list-group-item {
+    transition: background-color 0.2s;
+}
+.participant-list .list-group-item:hover {
+    background-color: #f8f9fa;
+}
