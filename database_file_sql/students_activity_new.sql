@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: 127.0.0.1:3306
--- Время создания: Мар 24 2026 г., 19:13
+-- Время создания: Мар 24 2026 г., 21:05
 -- Версия сервера: 8.0.24
 -- Версия PHP: 8.0.14
 
@@ -112,7 +112,10 @@ INSERT INTO `events` (`event_ID`, `event_Organizer`, `event_Title`, `event_Descr
 (3, 1, 'Олимпиада по видеомонтажу', 'Описание', 4, 1, '2026-03-24 17:22:00', '2026-03-24 13:21:00', 200, 3, 2),
 (4, 1, 'Тест', 'Тест', 4, 2, '2026-03-24 17:23:00', '2026-03-24 13:22:00', 1, 2, 1),
 (5, 7, 'Test test test', '', 4, 1, '2026-03-24 20:00:00', '2026-03-25 20:00:00', 120, 2, 1),
-(6, 1, 'Первая встреча', 'тут описание', 1, 1, '2026-04-20 08:00:00', '2026-04-20 09:00:00', 100, NULL, 1);
+(6, 1, 'Первая встреча', 'тут описание', 4, 1, '2026-04-20 08:00:00', '2026-04-20 09:00:00', 100, NULL, 1),
+(7, 1, 'ф', '', 4, 1, '2026-03-05 20:00:00', '2026-03-10 20:00:00', 250, NULL, 2),
+(8, 1, 'Тестовое мероприятие', 'мероприятие для тестирования', 2, 1, '2026-03-25 01:03:42', '2026-03-24 21:03:11', 120, 2, 1),
+(9, 1, 'Тестовое мероприятие', 'мероприятие для тестирования', 2, 2, '2026-03-25 01:03:59', '2026-03-24 21:03:11', 120, 2, 1);
 
 --
 -- Триггеры `events`
@@ -146,9 +149,8 @@ CREATE TABLE `event_participation` (
 --
 
 INSERT INTO `event_participation` (`participation_ID`, `participant_ID`, `event_ID`, `status_ID`) VALUES
-(1, 4, 1, 1),
-(2, 5, 1, 1),
-(3, 6, 2, 1);
+(1, 6, 5, 1),
+(2, 6, 7, 1);
 
 -- --------------------------------------------------------
 
@@ -191,7 +193,7 @@ CREATE TABLE `organizer_profiles` (
 --
 
 INSERT INTO `organizer_profiles` (`organizer_ID`, `organizer_fullname`, `organizer_events`, `organizer_prizes`, `organizer_trust`, `organizer_subrole`) VALUES
-(1, 'Петров Петр Петрович', 6, 'Встреча', '4.00', 1),
+(1, 'Петров Петр Петрович', 8, 'Встреча', '4.00', 1),
 (7, 'Test test test', 1, 'Билет', '5.00', 2);
 
 -- --------------------------------------------------------
@@ -213,9 +215,9 @@ CREATE TABLE `participant_levelsrate` (
 
 INSERT INTO `participant_levelsrate` (`participant_UserID`, `participant_Level`, `participant_TotalScore`, `participant_missingScore`) VALUES
 (3, 1, 0, 100),
-(4, 1, 80, 170),
-(5, 1, 0, 100),
-(6, 1, 88, 163);
+(4, 1, 0, 100),
+(5, 2, 213, 38),
+(6, 3, 83, 0);
 
 -- --------------------------------------------------------
 
@@ -556,13 +558,13 @@ ALTER TABLE `coef`
 -- AUTO_INCREMENT для таблицы `events`
 --
 ALTER TABLE `events`
-  MODIFY `event_ID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `event_ID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT для таблицы `event_participation`
 --
 ALTER TABLE `event_participation`
-  MODIFY `participation_ID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `participation_ID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT для таблицы `levelsrezerv`
