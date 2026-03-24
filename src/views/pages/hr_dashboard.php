@@ -166,6 +166,7 @@ $participants = User::getAllParticipantsWithFilters($filters);
     </footer>
 
     <script>
+        // assets/js/hr_dashboard.js (или внутри страницы hr_dashboard.php)
         function exportCandidatePDF(candidate) {
             const div = document.createElement('div');
             div.style.position = 'absolute';
@@ -175,17 +176,17 @@ $participants = User::getAllParticipantsWithFilters($filters);
             div.style.padding = '20px';
             div.style.fontFamily = 'sans-serif';
             div.innerHTML = `
-                <h2>Отчет по кандидату</h2>
-                <p><strong>ФИО:</strong> ${escapeHtml(candidate.participant_FullName)}</p>
-                <p><strong>Возраст:</strong> ${candidate.participant_Age}</p>
-                <p><strong>Город:</strong> ${escapeHtml(candidate.participant_City)}</p>
-                <p><strong>Категория:</strong> ${escapeHtml(candidate.category_Type)}</p>
-                <p><strong>Количество мероприятий:</strong> ${candidate.events_count}</p>
-                <p><strong>Средний балл:</strong> ${parseFloat(candidate.avg_score).toFixed(2)}</p>
-                <p><strong>Общий рейтинг:</strong> ${candidate.participant_TotalScore}</p>
-                <hr>
-                <p><small>Дата формирования: ${new Date().toLocaleString()}</small></p>
-            `;
+        <h2>Отчет по кандидату</h2>
+        <p><strong>ФИО:</strong> ${escapeHtml(candidate.participant_FullName)}</p>
+        <p><strong>Возраст:</strong> ${candidate.participant_Age}</p>
+        <p><strong>Город:</strong> ${escapeHtml(candidate.participant_City)}</p>
+        <p><strong>Категория:</strong> ${escapeHtml(candidate.category_Type)}</p>
+        <p><strong>Количество мероприятий:</strong> ${candidate.events_count}</p>
+        <p><strong>Средний балл:</strong> ${parseFloat(candidate.avg_score).toFixed(2)}</p>
+        <p><strong>Общий рейтинг:</strong> ${candidate.participant_TotalScore}</p>
+        <hr>
+        <p><small>Дата формирования: ${new Date().toLocaleString()}</small></p>
+    `;
             document.body.appendChild(div);
             const originalTitle = document.title;
             document.title = `Отчет_${candidate.participant_FullName}_${new Date().toISOString().slice(0,19)}`;
@@ -201,7 +202,7 @@ $participants = User::getAllParticipantsWithFilters($filters);
                 const imgWidth = 190;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
                 pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-                pdf.save(`candidate_${candidate.participant_UserID}.pdf`);
+                pdf.save(`candidate_id_${candidate.user_ID}.pdf`);
                 document.title = originalTitle;
                 document.body.removeChild(div);
             }).catch(() => {

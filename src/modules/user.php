@@ -183,20 +183,32 @@ class User
         if (!database::$pdo) {
             database::connect();
         }
+
         $stmt = database::$pdo->prepare("
-            SELECT participant_TotalScore FROM participant_levelsrate WHERE participant_UserID = ?
-        ");
+        SELECT COALESCE(SUM(e.event_Points * c.coef_Value), 0)
+        FROM event_participation ep
+        JOIN events e ON ep.event_ID = e.event_ID
+        JOIN coef c ON e.event_Coef = c.coef_ID
+        WHERE ep.participant_ID = ? AND ep.status_ID = 1
+    ");
         $stmt->execute([$participantId]);
-        $score = $stmt->fetchColumn();
-        $score = $score ?: 0;
+        $totalScore = $stmt->fetchColumn();
 
         $stmt = database::$pdo->prepare("
-            SELECT COUNT(*) + 1 FROM participant_levelsrate WHERE participant_TotalScore > ?
-        ");
-        $stmt->execute([$score]);
-        $rank = $stmt->fetchColumn();
+        SELECT COUNT(*) + 1 FROM (
+            SELECT SUM(e.event_Points * c.coef_Value) as total
+            FROM event_participation ep
+            JOIN events e ON ep.event_ID = e.event_ID
+            JOIN coef c ON e.event_Coef = c.coef_ID
+            WHERE ep.status_ID = 1
+            GROUP BY ep.participant_ID
+            HAVING total > ?
+        ) as t
+    ");
+        $stmt->execute([$totalScore]);
+        $rank = $stmt->fetchColumn() ?: 1;
 
-        return ['score' => $score, 'rank' => $rank];
+        return ['score' => $totalScore, 'rank' => $rank];
     }
 
     public static function getNextLevelProgress($participantId)
@@ -357,14 +369,17 @@ class User
             pp.participant_FullName,
             pp.participant_City,
             cat.category_Type,
-            pl.participant_TotalScore,
+            COALESCE(SUM(e.event_Points * c.coef_Value), 0) as total_score,
             pl.participant_Level,
             lvl.lvl_Name as level_name
-        FROM participant_levelsrate pl
-        JOIN participant_profiles pp ON pl.participant_UserID = pp.participant_UserID
-        JOIN users u ON pl.participant_UserID = u.user_ID
+        FROM users u
+        JOIN participant_profiles pp ON u.user_ID = pp.participant_UserID
         JOIN category cat ON pp.participant_category = cat.category_ID
-        JOIN levelsrezerv lvl ON pl.participant_Level = lvl.lvl_ID
+        LEFT JOIN event_participation ep ON u.user_ID = ep.participant_ID AND ep.status_ID = 1
+        LEFT JOIN events e ON ep.event_ID = e.event_ID
+        LEFT JOIN coef c ON e.event_Coef = c.coef_ID
+        LEFT JOIN participant_levelsrate pl ON u.user_ID = pl.participant_UserID
+        LEFT JOIN levelsrezerv lvl ON pl.participant_Level = lvl.lvl_ID
         WHERE u.user_Role = 1
     ";
 
@@ -375,7 +390,9 @@ class User
             $params[] = $categoryId;
         }
 
-        $sql .= " ORDER BY pl.participant_TotalScore DESC, u.user_ID ASC LIMIT ?";
+        $sql .= " GROUP BY u.user_ID, pp.participant_FullName, pp.participant_City, cat.category_Type, pl.participant_Level, lvl.lvl_Name
+              ORDER BY total_score DESC, u.user_ID ASC
+              LIMIT ?";
         $params[] = (int)$limit;
 
         $stmt = database::$pdo->prepare($sql);
@@ -571,36 +588,44 @@ class User
 
         $stmt = database::$pdo->query("SELECT lvl_ID, lvl_TargetScore FROM levelsrezerv ORDER BY lvl_ID");
         $levels = $stmt->fetchAll();
-        if (empty($levels)) return false;
+        if (empty($levels)) {
+            return false;
+        }
 
-        $currentScore = $totalScore;
+        $remaining = $totalScore;
         $currentLevel = $levels[0]['lvl_ID'];
-        $nextLevel = null;
 
         foreach ($levels as $index => $level) {
             $target = $level['lvl_TargetScore'];
-            if ($currentScore >= $target) {
-                $currentScore -= $target;
+            if ($remaining >= $target) {
+                $remaining -= $target;
                 $currentLevel = $level['lvl_ID'];
-                if ($index == count($levels) - 1) break;
+                if ($index == count($levels) - 1) {
+                    break;
+                }
             } else {
-                $nextLevel = $level;
+                $currentLevel = $level['lvl_ID'];
                 break;
             }
         }
-        if ($nextLevel === null && !empty($levels)) {
-            $nextLevel = end($levels);
-            $currentLevel = $nextLevel['lvl_ID'];
-        }
 
-        $missingScore = max(0, $nextLevel['lvl_TargetScore'] - $currentScore);
+        // Находим цель текущего уровня
+        $nextTarget = $levels[array_search($currentLevel, array_column($levels, 'lvl_ID'))]['lvl_TargetScore'];
+        $missingScore = max(0, $nextTarget - $remaining);
+
+        // Если достигнут максимальный уровень, missingScore = 0
+        if ($currentLevel == end($levels)['lvl_ID']) {
+            $missingScore = 0;
+        }
 
         $stmt = database::$pdo->prepare("
         UPDATE participant_levelsrate
-        SET participant_Level = ?, participant_TotalScore = ?, participant_missingScore = ?
+        SET participant_Level = ?,
+            participant_TotalScore = ?,
+            participant_missingScore = ?
         WHERE participant_UserID = ?
     ");
-        return $stmt->execute([$currentLevel, $currentScore, $missingScore, $userId]);
+        return $stmt->execute([$currentLevel, $remaining, $missingScore, $userId]);
     }
     public static function updateOrganizerMostCommonBonus($organizerId)
     {

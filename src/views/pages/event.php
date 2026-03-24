@@ -131,7 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
                             <a href="/profile?id=<?= $event['event_Organizer'] ?>">
                                 <?= htmlspecialchars($event['organizer_fullname'] ?? $event['organizer_login']) ?>
                             </a>
-                        </p>    
+                        </p>
                         <div class="mb-2">
                             <span class="badge bg-secondary"><?= htmlspecialchars($event['status_Type']) ?></span>
                             <span class="badge bg-info text-dark ms-2">Сложность: <?= htmlspecialchars($event['coef_Difficult']) ?></span>
@@ -206,7 +206,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['join_event'])) {
                                     <div class="list-group-item">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <strong><?= htmlspecialchars($p['participant_FullName']) ?></strong><br>
+                                                <a href="/profile?id=<?= $p['participant_UserID'] ?>" class="text-dark text-decoration-none fw-bold">
+                                                    <?= htmlspecialchars($p['participant_FullName']) ?>
+                                                </a>
+                                                <br>
                                                 <small><?= htmlspecialchars($p['participant_City']) ?>, <?= $p['participant_Age'] ?> лет</small>
                                             </div>
                                             <span class="badge <?= $p['status_ID'] == 1 ? 'bg-success' : ($p['status_ID'] == 2 ? 'bg-warning text-dark' : 'bg-danger') ?>">

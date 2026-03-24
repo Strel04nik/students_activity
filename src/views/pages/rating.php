@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 use db\database;
 use modules\User;
 
@@ -13,6 +14,7 @@ $participants = User::getLeaderboard($categoryId, 100);
 ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +23,7 @@ $participants = User::getLeaderboard($categoryId, 100);
     <link href="/assets/css/home.css" rel="stylesheet">
     <link href="/assets/css/rating.css" rel="stylesheet">
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
@@ -91,28 +94,28 @@ $participants = User::getLeaderboard($categoryId, 100);
                     <div class="table-responsive">
                         <table class="table table-striped table-hover mb-0">
                             <thead>
-                                    <th>Место</th>
-                                    <th>Участник</th>
-                                    <th>Город</th>
-                                    <th>Категория</th>
-                                    <th>Уровень</th>
-                                    <th>Баллы</th>
+                                <th>Место</th>
+                                <th>Участник</th>
+                                <th>Город</th>
+                                <th>Категория</th>
+                                <th>Уровень</th>
+                                <th>Баллы</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php foreach ($participants as $p): ?>
-                                <tr>
-                                    <td class="fw-bold"><?= $p['rank'] ?></td>
-                                    <td>
-                                        <a href="/profile?id=<?= $p['user_ID'] ?>" class="text-dark text-decoration-none">
-                                            <?= htmlspecialchars($p['participant_FullName']) ?>
-                                        </a>
-                                    </td>
-                                    <td><?= htmlspecialchars($p['participant_City']) ?></td>
-                                    <td><?= htmlspecialchars($p['category_Type']) ?></td>
-                                    <td><?= htmlspecialchars($p['level_name']) ?></td>
-                                    <td class="fw-bold text-primary"><?= $p['participant_TotalScore'] ?></td>
-                                </tr>
+                                    <tr>
+                                        <td class="fw-bold"><?= $p['rank'] ?></td>
+                                        <td>
+                                            <a href="/profile?id=<?= $p['user_ID'] ?>" class="text-dark text-decoration-none">
+                                                <?= htmlspecialchars($p['participant_FullName']) ?>
+                                            </a>
+                                        </td>
+                                        <td><?= htmlspecialchars($p['participant_City']) ?></td>
+                                        <td><?= htmlspecialchars($p['category_Type']) ?></td>
+                                        <td><?= htmlspecialchars($p['level_name']) ?></td>
+                                        <td class="fw-bold text-primary"><?= $p['total_score'] ?></td>
+                                    </tr>
                                 <?php endforeach; ?>
                             </tbody>
                         </table>
@@ -130,4 +133,5 @@ $participants = User::getLeaderboard($categoryId, 100);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

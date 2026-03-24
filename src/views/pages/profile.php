@@ -181,7 +181,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile']) && 
                             </div>
                             <?php if ($profile['user_Role'] == 2): ?>
                                 <div class="profile-field">
-                                    <span><strong>Отдел кадров:</strong> <?= htmlspecialchars($profile['spec_HRDepartament']) ?></span>
+                                    <label class="fw-bold">Отдел кадров</label>
+                                    <?php if ($canEdit): ?>
+                                        <input type="text" name="hr_department" class="form-control mt-1" value="<?= htmlspecialchars($profile['spec_HRDepartament']) ?>" required>
+                                    <?php else: ?>
+                                        <p class="mt-1"><?= htmlspecialchars($profile['spec_HRDepartament']) ?></p>
+                                    <?php endif; ?>
                                 </div>
                             <?php endif; ?>
                             <?php if ($profile['user_Role'] == 1): ?>
@@ -344,14 +349,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile']) && 
                             <h2 class="h5 mb-0">Рейтинг и кадровый резерв</h2>
                         </div>
                         <div class="card-body">
-                            <p><strong>Текущий рейтинг:</strong> <?= $participantRank['score'] ?> баллов</p>
+                            <p><strong>Текущий рейтинг:</strong> <?= $nextLevelProgress['participant_TotalScore'] ?> баллов за текущий уровень (Всего баллов: <?= $participantRank['score'] ?> )</p>
                             <p><strong>Место в общем зачете:</strong> <?= $participantRank['rank'] ?></p>
                             <?php if ($nextLevelProgress): ?>
                                 <p><strong>Текущий уровень:</strong> <?= htmlspecialchars($nextLevelProgress['lvl_Name']) ?></p>
-                                <p><strong>До следующего уровня:</strong>
-                                    <?= max(0, $nextLevelProgress['participant_missingScore']) ?> баллов
-                                    (цель: <?= $nextLevelProgress['lvl_TargetScore'] ?> баллов)
-                                </p>
+                                <?php
+                                $maxLevelId = database::$pdo->query("SELECT MAX(lvl_ID) FROM levelsrezerv")->fetchColumn();
+                                if ($nextLevelProgress['participant_missingScore'] == 0 && $nextLevelProgress['participant_Level'] == $maxLevelId) {
+                                    echo '<p><strong>Максимальный уровень достигнут</strong> (' . $participantRank['score'] . ' / ' . $nextLevelProgress['lvl_TargetScore'] . ' баллов)</p>';
+                                } else {
+                                    echo '<p><strong>До следующего уровня:</strong> ' . max(0, $nextLevelProgress['participant_missingScore']) . ' баллов (цель: ' . $nextLevelProgress['lvl_TargetScore'] . ' баллов)</p>';
+                                }
+                                ?>
                                 <div class="progress">
                                     <?php
                                     $progressPercent = ($participantRank['score'] / $nextLevelProgress['lvl_TargetScore']) * 100;
@@ -361,44 +370,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile']) && 
                                 </div>
                             <?php else: ?>
                                 <p class="text-muted">Нет данных об уровнях кадрового резерва.</p>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-
-                    <div class="card shadow-sm">
-                        <div class="card-header bg-white">
-                            <h2 class="h5 mb-0">Портфолио достижений</h2>
-                        </div>
-                        <div class="card-body p-0">
-                            <?php if (empty($participantPortfolio)): ?>
-                                <p class="text-muted p-3">Нет завершённых мероприятий.</p>
-                            <?php else: ?>
-                                <div class="list-group list-group-flush">
-                                    <?php foreach ($participantPortfolio as $item): ?>
-                                        <div class="list-group-item">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <a href="/event?id=<?= $item['event_ID'] ?>" class="text-dark fw-bold"><?= htmlspecialchars($item['event_Title']) ?></a>
-                                                    <br>
-                                                    <small class="text-muted">
-                                                        <?= date('d.m.Y', strtotime($item['event_DateTimeStart'])) ?> –
-                                                        <?= date('d.m.Y', strtotime($item['event_DateTimeEnd'])) ?>
-                                                    </small>
-                                                </div>
-                                                <span class="badge bg-success"
-                                                    title="<?= htmlspecialchars("{$item['event_Points']} баллов × {$item['coef_Value']} (коэффициент за сложность) = {$item['earned_points']} баллов") ?>">
-                                                    +<?= $item['earned_points'] ?> баллов
-                                                </span>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h2 class="h5 mb-0">Портфолио достижений</h2>
+            </div>
+            <div class="card-body p-0">
+                <?php if (empty($participantPortfolio)): ?>
+                    <p class="text-muted p-3">Нет завершённых мероприятий.</p>
+                <?php else: ?>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($participantPortfolio as $item): ?>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="/event?id=<?= $item['event_ID'] ?>" class="text-dark fw-bold"><?= htmlspecialchars($item['event_Title']) ?></a>
+                                        <br>
+                                        <small class="text-muted">
+                                            <?= date('d.m.Y', strtotime($item['event_DateTimeStart'])) ?> –
+                                            <?= date('d.m.Y', strtotime($item['event_DateTimeEnd'])) ?>
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-success"
+                                        title="<?= htmlspecialchars("{$item['event_Points']} баллов × {$item['coef_Value']} (коэффициент за сложность) = {$item['earned_points']} баллов") ?>">
+                                        +<?= $item['earned_points'] ?> баллов
+                                    </span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+    </div>
+    </div>
     </main>
 
     <footer>

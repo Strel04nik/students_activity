@@ -9,7 +9,7 @@ class database
     // *********
     // То, что нужно менять!
     public static $host = '127.0.0.1:3306';
-    public static $dbname = 'students_activity_new';
+    public static $dbname = 'students_activity';
     public static $username = 'root';
     public static $password = '';
     // ********
